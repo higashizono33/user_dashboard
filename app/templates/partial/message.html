@@ -1,0 +1,47 @@
+<section>
+    <h5>{{message.user.first_name}} {{message.user.last_name}} - {{message.created_at|date:'F jS Y'}} / {{message.created_at|timesince}} ago
+        {% if user == message.user and message.is_recent %}
+            <a href="{% url 'edit_message' message.id %}" class="message_edit" messageId={{message.id}}><span class="badge bg-warning">edit</span></a>
+            <a href="{% url 'delete_message' message.id %}" class="message_delete" messageId={{message.id}}><span class="badge bg-danger">delete</span></a>
+        {% endif %}
+    </h5>    
+    <p class="ms-3">{{message.message}}</p>
+    <form action="{% url 'edit_message' message.id %}" method="POST" style="display: none;" messageId={{message.id}}>
+        {% csrf_token %}
+        <span class="text-danger m_error"></span>
+        <textarea name="message" class="form-control" rows="3">{{message.message}}</textarea>
+    </form>
+    <div class="ms-5" id='c_wrapper'>
+        <div style="max-height: 300px;" class="overflow-auto">
+            {% for comment in comments %}
+                {% if comment.message.id == message.id %}
+                <section>
+                    <h5>{{comment.user.first_name}} {{comment.user.last_name}} - {{comment.created_at|date:'F jS Y'}} / {{comment.created_at|timesince}} ago
+                        {% if user == comment.user and comment.is_recent %}
+                            <a href="{% url 'edit_comment' comment.id %}" class="comment_edit" commentId={{comment.id}}><span class="badge bg-warning">edit</span></a>
+                            <a href="{% url 'delete_comment' comment.id %}" class="comment_delete" commentId={{comment.id}}><span class="badge bg-danger">delete</span></a>
+                        {% endif %}
+                    </h5>    
+                    <p>{{comment.comment}}</p>
+                    <form action="{% url 'edit_comment' comment.id %}" method="POST" style="display: none;" commentId={{comment.id}}>
+                        {% csrf_token %}
+                        <span class="text-danger c_error"></span>
+                        <textarea name="comment" class="form-control" rows="3">{{comment.comment}}</textarea>
+                    </form>
+                </section>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <form action="{% url 'post_comment' message.id %}" method="POST" class="form_comment" messageId={{message.id}}>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">Post a comment</label>
+                <span class="text-danger c_error"></span>
+                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name='comment'></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button class="btn btn-success">Post a comment</button>
+            </div>
+        </form>
+    </div>
+</section>

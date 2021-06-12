@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+{% include 'navbar.html' %}
+<div class="container mt-5">
+    <h2>{{profile.first_name}} {{profile.last_name}}</h2>
+    <div class="container mb-5">
+        <div class="row mb-2">
+            <div class="col-6 fs-5">
+                <div class="row">
+                    <span class="col-3">Registered at:</span>
+                    <span class="col-9">{{profile.date_joined}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-6 fs-5">
+                <div class="row">
+                    <span class="col-3">User ID:</span>
+                    <span class="col-9">{{profile.id}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-6 fs-5">
+                <div class="row">
+                    <span class="col-3">Email address:</span>
+                    <span class="col-9">{{profile.email}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-6 fs-5">
+                <div class="row">
+                    <span class="col-3">Description:</span>
+                    <span class="col-9">{{profile.description}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3>Leave a message for {{profile.first_name}}</h3>
+    <form action="{% url 'post_message' %}" method="POST" id='form_message'>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label">Post a message</label>
+            <span class="text-danger m_error"></span>
+            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name='message'></textarea>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button class="btn btn-primary">Post a message</button>
+        </div>
+    </form>
+    {% for message in object_list %}
+    <section>
+        <h5>{{message.user.first_name}} {{message.user.last_name}} - {{message.created_at|date:'F jS Y'}} / {{message.created_at|timesince}} ago
+            {% if user == message.user and message.is_recent %}
+                <a href="{% url 'edit_message' message.id %}" class="message_edit" messageId={{message.id}}><span class="badge bg-warning">edit</span></a>
+                <a href="{% url 'delete_message' message.id %}" class="message_delete" messageId={{message.id}}><span class="badge bg-danger">delete</span></a>
+            {% endif %}
+        </h5>    
+        <p class="ms-3">{{message.message}}</p>
+        <form action="{% url 'edit_message' message.id %}" method="POST" style="display: none;" messageId={{message.id}}>
+            {% csrf_token %}
+            <span class="text-danger m_error"></span>
+            <textarea name="message" class="form-control" rows="3">{{message.message}}</textarea>
+        </form>
+        <div class="ms-5" id='c_wrapper'>
+            <div style="max-height: 300px;" class="overflow-auto">
+                {% for comment in comments %}
+                    {% if comment.message.id == message.id %}
+                    <section>
+                        <h5>{{comment.user.first_name}} {{comment.user.last_name}} - {{comment.created_at|date:'F jS Y'}} / {{comment.created_at|timesince}} ago
+                            {% if user == comment.user and comment.is_recent %}
+                                <a href="{% url 'edit_comment' comment.id %}" class="comment_edit" commentId={{comment.id}}><span class="badge bg-warning">edit</span></a>
+                                <a href="{% url 'delete_comment' comment.id %}" class="comment_delete" commentId={{comment.id}}><span class="badge bg-danger">delete</span></a>
+                            {% endif %}
+                        </h5>    
+                        <p>{{comment.comment}}</p>
+                        <form action="{% url 'edit_comment' comment.id %}" method="POST" style="display: none;" commentId={{comment.id}}>
+                            {% csrf_token %}
+                            <span class="text-danger c_error"></span>
+                            <textarea name="comment" class="form-control" rows="3">{{comment.comment}}</textarea>
+                        </form>
+                    </section>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <form action="{% url 'post_comment' message.id %}" method="POST" class="form_comment" messageId={{message.id}}>
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label">Post a comment</label>
+                    <span class="text-danger c_error"></span>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name='comment'></textarea>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-success">Post a comment</button>
+                </div>
+            </form>
+        </div>
+    </section>
+    {% endfor %}
+    <div class="row">
+        <nav aria-label="Message navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{page_obj.previous_page_number}}">Previous</a>
+                    </li>
+                {% endif %}
+                {% for page_num in page_obj.paginator.page_range %}
+                    {% if page_num == page_obj.number %}
+                        <li class="page-item active"><a class="page-link" href="?page={{page_num}}">{{page_num}}</a></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{page_num}}">{{page_num}}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{page_obj.next_page_number}}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script src="{% static 'js/main.js' %}"></script>
+{% endblock %}

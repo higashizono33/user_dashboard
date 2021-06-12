@@ -1,0 +1,18 @@
+{% for comment in comments %}
+    {% if comment.message.id == message.id %}
+    <section>
+        <h5>{{comment.user.first_name}} {{comment.user.last_name}} - {{comment.created_at|date:'F jS Y'}} / {{comment.created_at|timesince}} ago
+            {% if user == comment.user and comment.is_recent %}
+                <a href="{% url 'edit_comment' comment.id %}" class="comment_edit" commentId={{comment.id}}><span class="badge bg-warning">edit</span></a>
+                <a href="{% url 'delete_comment' comment.id %}" class="comment_delete" commentId={{comment.id}}><span class="badge bg-danger">delete</span></a>
+            {% endif %}
+        </h5>    
+        <p>{{comment.comment}}</p>
+        <form action="{% url 'edit_comment' comment.id %}" method="POST" style="display: none;" commentId={{comment.id}}>
+            {% csrf_token %}
+            <span class="text-danger c_error"></span>
+            <textarea name="comment" class="form-control" rows="3">{{comment.comment}}</textarea>
+        </form>
+    </section>
+    {% endif %}
+{% endfor %}
